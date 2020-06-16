@@ -10,7 +10,7 @@ class App extends Component {
       toyData: [], //storage/ state
       newToyName: '',
       newToyCategory: '',
-
+      updateId: '',
       newEditName: '', //when edit form is updated add to this string
     };
     //  bind method in constructor
@@ -81,12 +81,33 @@ class App extends Component {
     console.log(e.target.value, '<><><><><><>');
   }
 
-  async updateToyName(e, id) {
-    e.preventDefault();
-    const { editName } = this.state;
-    console.log(id, '<><><><><>', editName);
+  
+  updateId = (e) => {
+    this.setState({ updateId: e.target.value });
+    console.log(e.target.value, '<><><><><><>');
   }
 
+   updateToyName = async (e) => {
+    e.preventDefault();
+    let { newEditName, updateId } = this.state;
+    
+    updateId = updateId * 1
+
+    console.log('id',updateId, 'newEditname',newEditName,'<><><>')
+    try {
+      const {data} = await axios.put(`http://127.0.0.1:8000/toys/${updateId}/`,{name: newEditName, category:'hardcoded for now'})
+      console.log(data)
+
+      const updatedToysArr = this.state.toyData.filter(toy => toy.id !== data.id)
+      this.setState({toyData:[...updatedToysArr, data]})
+
+    }
+    catch(err){
+      console.log(err)
+    } 
+    
+  }
+  
   render() {
     // grabbing toy date from our storage
     const { toyData, newToyName, newToyCategory, newEditName } = this.state;
@@ -117,16 +138,24 @@ class App extends Component {
                 {/* event is not being used by delete toy this is why we let the function return deleteToy with id */}
                 <button onClick={(event) => this.deleteToy(id)}>
                   Delete Toy
-                </button>
-                <form onSubmit={(e) => this.updateToyName(e, id)}>
-                  {/* edit section */}
-                  <input onChange={this.editName} value={name} />
-                  <button>Update Toy Name</button>
-                </form>
+                </button>                
               </li>
             ))
           }
         </ul>
+        <div>
+        <form onSubmit={this.updateToyName}>
+          {/* edit section */}
+          <h1>edit form</h1>
+                  {/* edit section */}
+                  <h3>toy fields</h3>
+                  <label>ID</label>
+                  <input onChange={this.updateId}/>
+                  <label>Toy Name</label>
+                  <input onChange={this.editName}/>                  
+                  <button type='submit'>Update Toy Name</button>
+                </form>
+        </div>
       </div>
     );
   }
