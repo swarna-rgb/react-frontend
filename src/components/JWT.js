@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Cookies from 'universal-cookie';
 
 export const AuthView = () => {
   // state
@@ -10,14 +11,34 @@ export const AuthView = () => {
   //   helpers
   const fetchToys = async () => {
     try {
-      let token = localStorage.getItem('token');
-      console.log(token);
-      //   const { data } = await axios.get('http://localhost:8000/toys/');
-      //   console.log(data, 'data<><><><><><');
+      const cookie = new Cookies();
+      const token = cookie.get('token');
+
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const { data } = await axios.get('http://localhost:8000/toys/', {
+        headers,
+      });
+      //   update our state with fetched toys
+      setToys(data);
     } catch (err) {
       console.log(err);
     }
   };
+
+  const listToys = () => (
+    <ul>
+      {toys.map(({ name, category, owner, id }) => {
+        return (
+          <li key={id}>
+            <h3>{name}</h3>
+            <h6>{category}</h6>
+            <p>{owner}</p>
+          </li>
+        );
+      })}
+    </ul>
+  );
 
   const changeUser = (e) => {
     setUsername(e.target.value);
@@ -29,15 +50,16 @@ export const AuthView = () => {
 
   const handleLogin = async (e, username, password) => {
     e.preventDefault();
-    console.log('submited');
-    console.log(username, password, 'data to login');
+
     try {
       const { data } = await axios.post('http://localhost:8000/api/token/', {
         username,
         password,
       });
       const { access, refresh } = data;
-      localStorage.setItem('token', access);
+      const cookie = new Cookies();
+
+      cookie.set('token', access, { path: '/' });
     } catch (err) {
       console.log(err);
     }
@@ -58,6 +80,7 @@ export const AuthView = () => {
       <br />
       <br />
       <button onClick={fetchToys}>Load Toy List</button>
+      {listToys()}
     </div>
   );
 };
