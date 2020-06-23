@@ -11,6 +11,8 @@ export const AuthView = () => {
   //   helpers
   const fetchToys = async () => {
     try {
+      // TODO if token is undefined or expired let the user know
+      // use modal
       const cookie = new Cookies();
       const token = cookie.get('token');
 
@@ -59,6 +61,7 @@ export const AuthView = () => {
       const { access, refresh } = data;
       const cookie = new Cookies();
 
+      // localStorage.setItem('token', acces)
       cookie.set('token', access, { path: '/' });
     } catch (err) {
       console.log(err);
